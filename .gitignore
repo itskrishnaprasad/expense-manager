@@ -1,2 +1,8 @@
-/node_modules
+# Node
+node_modules/
+npm-debug.log
+
+# Env
 .env
+
+README.md
