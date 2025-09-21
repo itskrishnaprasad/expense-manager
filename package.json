@@ -1,4 +1,9 @@
 {
+  "name": "expense-manager",
+  "version": "0.0.0",
+  "description": "A simple Express app with Tailwind CSS",
+  "author": "Krishna Prasad",
+  "license": "",
   "type": "module",
   "scripts": {
     "dev": "nodemon src/server.js",
