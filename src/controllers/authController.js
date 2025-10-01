@@ -1,4 +1,5 @@
 import User from "../models/userModel.js"; // importing userSchema
+import Transaction from "../models/transactionModel.js";
 import bcrypt from "bcrypt"; // for hasing user password
 
 // Show register page
@@ -80,8 +81,22 @@ export const postLogin = async (req, res) => {
 };
 
 // Show user dashboard
-export const getDashboard = (req, res) => {
-  res.render("pages/dashboard", { title: "Dashboard" });
+export const getDashboard = async (req, res) => {
+  try {
+    // Find all transactions for the logged-in user
+    const transactions = await Transaction.find({
+      user: req.session.user.id,
+    }).sort({ date: -1 }); // Sort by date, newest first
+
+    res.render("pages/dashboard", {
+      title: "Dashboard",
+      transactions: transactions, // Pass transactions to the view
+    });
+  } catch (error) {
+    console.error(error);
+    req.flash("error_msg", "Error loading dashboard data.");
+    res.redirect("/login");
+  }
 };
 
 // Handle user logout
