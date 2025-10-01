@@ -1,12 +1,14 @@
 import Transaction from "../models/transactionModel.js";
 
-//    Add a new transaction
+//  Add a new transaction
 export const postTransaction = async (req, res) => {
   try {
-    const { type, amount, note, date } = req.body;
+    // 1. Get 'category' from the request body
+    const { type, amount, note, date, category } = req.body;
     const userId = req.session.user.id;
 
-    if (!type || !amount || !date) {
+    // 2. Add 'category' to the validation check
+    if (!type || !amount || !date || !category) {
       req.flash("error_msg", "Please fill in all required fields.");
       return res.redirect("/dashboard");
     }
@@ -17,6 +19,7 @@ export const postTransaction = async (req, res) => {
       amount,
       note,
       date,
+      category, // 3. Add the category to the new transaction object
     });
 
     await newTransaction.save();

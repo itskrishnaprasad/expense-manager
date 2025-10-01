@@ -1,5 +1,6 @@
 import User from "../models/userModel.js"; // importing userSchema
 import Transaction from "../models/transactionModel.js";
+import Category from "../models/categoryModel.js";
 import bcrypt from "bcrypt"; // for hasing user password
 
 // Show register page
@@ -29,6 +30,25 @@ export const postRegister = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({ username, password: hashedPassword });
     await newUser.save();
+
+    // --- SEED DEFAULT CATEGORIES FOR THE NEW USER ---
+    const defaultCategories = [
+      // Expense Categories
+      { name: "Food", type: "expense", user: newUser._id, isDefault: true },
+      { name: "Rent", type: "expense", user: newUser._id, isDefault: true },
+      { name: "Travel", type: "expense", user: newUser._id, isDefault: true },
+      {
+        name: "Groceries",
+        type: "expense",
+        user: newUser._id,
+        isDefault: true,
+      },
+      // Income Categories
+      { name: "Salary", type: "income", user: newUser._id, isDefault: true },
+      { name: "Freelance", type: "income", user: newUser._id, isDefault: true },
+    ];
+
+    await Category.insertMany(defaultCategories);
 
     req.flash("success_msg", "You are now registered and can log in");
     res.redirect("/login");
@@ -83,14 +103,25 @@ export const postLogin = async (req, res) => {
 // Show user dashboard
 export const getDashboard = async (req, res) => {
   try {
-    // Find all transactions for the logged-in user
-    const transactions = await Transaction.find({
-      user: req.session.user.id,
-    }).sort({ date: -1 }); // Sort by date, newest first
+    const userId = req.session.user.id; // Get the logged-in user's ID
+
+    const [transactions, incomeCategories, expenseCategories] =
+      await Promise.all([
+        // Fetch transactions for THIS user
+        Transaction.find({ user: userId })
+          .populate("category")
+          .sort({ date: -1 }),
+        // Fetch income categories for THIS user
+        Category.find({ user: userId, type: "income" }).sort({ name: 1 }),
+        // Fetch expense categories for THIS user
+        Category.find({ user: userId, type: "expense" }).sort({ name: 1 }),
+      ]);
 
     res.render("pages/dashboard", {
       title: "Dashboard",
-      transactions: transactions, // Pass transactions to the view
+      transactions,
+      incomeCategories,
+      expenseCategories,
     });
   } catch (error) {
     console.error(error);

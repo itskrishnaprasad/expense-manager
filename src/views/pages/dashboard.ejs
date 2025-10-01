@@ -1,24 +1,54 @@
-<div class="container mx-auto p-4">
-  <h1 class="text-3xl font-bold mb-4">Welcome, <%= user.username %>!</h1>
+<div class="container mx-auto p-4 md:p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl md:text-3xl font-bold">
+      Welcome, <%= user.username %>!
+    </h1>
+    <a
+      href="/logout"
+      class="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition duration-200"
+      >Logout</a
+    >
+  </div>
 
   <div class="bg-white p-6 rounded-lg shadow-md mb-8">
     <h2 class="text-2xl font-semibold mb-4">Add New Transaction</h2>
     <form action="/transactions" method="POST">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
-          <label for="type" class="block text-gray-700">Type</label>
+          <label
+            for="transactionType"
+            class="block text-sm font-medium text-gray-700"
+            >Type</label
+          >
           <select
             name="type"
-            id="type"
+            id="transactionType"
             required
-            class="w-full mt-1 p-2 border rounded-md"
+            class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="expense">Expense</option>
             <option value="income">Income</option>
           </select>
         </div>
+
         <div>
-          <label for="amount" class="block text-gray-700">Amount</label>
+          <label
+            for="transactionCategory"
+            class="block text-sm font-medium text-gray-700"
+            >Category</label
+          >
+          <select
+            name="category"
+            id="transactionCategory"
+            required
+            class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          ></select>
+        </div>
+
+        <div>
+          <label for="amount" class="block text-sm font-medium text-gray-700"
+            >Amount</label
+          >
           <input
             type="number"
             name="amount"
@@ -26,34 +56,41 @@
             step="0.01"
             min="0.01"
             required
-            class="w-full mt-1 p-2 border rounded-md"
+            class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            placeholder="0.00"
           />
         </div>
+
         <div>
-          <label for="date" class="block text-gray-700">Date</label>
+          <label for="date" class="block text-sm font-medium text-gray-700"
+            >Date</label
+          >
           <input
             type="date"
             name="date"
             id="date"
             required
             value="<%= new Date().toISOString().split('T')[0] %>"
-            class="w-full mt-1 p-2 border rounded-md"
+            class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        <div>
-          <label for="note" class="block text-gray-700">Note (Optional)</label>
+
+        <div class="md:col-span-2">
+          <label for="note" class="block text-sm font-medium text-gray-700"
+            >Note (Optional)</label
+          >
           <input
             type="text"
             name="note"
             id="note"
-            class="w-full mt-1 p-2 border rounded-md"
-            placeholder="e.g., Groceries"
+            class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            placeholder="e.g., Lunch with colleagues"
           />
         </div>
       </div>
       <button
         type="submit"
-        class="mt-4 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+        class="mt-6 w-full md:w-auto bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition duration-200"
       >
         Add Transaction
       </button>
@@ -65,33 +102,63 @@
     <% if (transactions.length > 0) { %>
     <div class="overflow-x-auto">
       <table class="min-w-full bg-white">
-        <thead class="bg-gray-100">
+        <thead class="bg-gray-50">
           <tr>
-            <th class="py-2 px-4 text-left">Type</th>
-            <th class="py-2 px-4 text-left">Date</th>
-            <th class="py-2 px-4 text-left">Note</th>
-            <th class="py-2 px-4 text-right">Amount</th>
-            <th class="py-2 px-4 text-center">Actions</th>
+            <th
+              class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase"
+            >
+              Type
+            </th>
+            <th
+              class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase"
+            >
+              Date
+            </th>
+            <th
+              class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase"
+            >
+              Category
+            </th>
+            <th
+              class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase"
+            >
+              Note
+            </th>
+            <th
+              class="py-3 px-4 text-right text-xs font-medium text-gray-500 uppercase"
+            >
+              Amount
+            </th>
+            <th
+              class="py-3 px-4 text-center text-xs font-medium text-gray-500 uppercase"
+            >
+              Actions
+            </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-gray-200">
           <% transactions.forEach(function(tx) { %>
-          <tr class="border-b">
-            <td class="py-2 px-4">
+          <tr>
+            <td class="py-4 px-4 whitespace-nowrap">
               <span
-                class="px-2 py-1 text-xs font-semibold rounded-full <%= tx.type === 'income' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800' %>"
+                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <%= tx.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>"
               >
                 <%= tx.type.charAt(0).toUpperCase() + tx.type.slice(1) %>
               </span>
             </td>
-            <td class="py-2 px-4"><%= tx.date.toLocaleDateString() %></td>
-            <td class="py-2 px-4"><%= tx.note %></td>
+            <td class="py-4 px-4 text-sm text-gray-500">
+              <%= tx.date.toLocaleDateString() %>
+            </td>
+            <td class="py-4 px-4 text-sm text-gray-900">
+              <%= tx.category.name %>
+            </td>
+            <td class="py-4 px-4 text-sm text-gray-500"><%= tx.note %></td>
             <td
-              class="py-2 px-4 text-right font-medium <%= tx.type === 'income' ? 'text-green-600' : 'text-red-600' %>"
+              class="py-4 px-4 text-right text-sm font-medium <%= tx.type === 'income' ? 'text-green-600' : 'text-red-600' %>"
             >
               ₹<%= tx.amount.toFixed(2) %>
             </td>
-            <td class="py-2 px-4 text-center">
+            <td class="py-4 px-4 text-center">
               <form
                 action="/transactions/delete/<%= tx._id %>"
                 method="POST"
@@ -99,7 +166,7 @@
               >
                 <button
                   type="submit"
-                  class="text-red-500 hover:text-red-700 text-sm"
+                  class="text-red-600 hover:text-red-900 text-sm font-medium"
                 >
                   Delete
                 </button>
@@ -111,10 +178,37 @@
       </table>
     </div>
     <% } else { %>
-    <p class="text-gray-500">
+    <p class="text-gray-500 text-center py-4">
       You have no transactions yet. Add one above to get started!
     </p>
     <% } %>
   </div>
 </div>
-<a href="/logout">Logout</a>
+
+<script>
+  // This script remains the same and is perfectly correct.
+  const incomeCategories = <%- JSON.stringify(incomeCategories) %>;
+  const expenseCategories = <%- JSON.stringify(expenseCategories) %>;
+
+  const typeSelect = document.getElementById('transactionType');
+  const categorySelect = document.getElementById('transactionCategory');
+
+  function populateCategories() {
+    const selectedType = typeSelect.value;
+    const categories = (selectedType === 'income') ? incomeCategories : expenseCategories;
+
+    // Clear existing options
+    categorySelect.innerHTML = '<option value="" disabled selected>Select a category</option>';
+
+    // Add new options
+    categories.forEach(cat => {
+      const option = document.createElement('option');
+      option.value = cat._id;
+      option.textContent = cat.name;
+      categorySelect.appendChild(option);
+    });
+  }
+
+  typeSelect.addEventListener('change', populateCategories);
+  document.addEventListener('DOMContentLoaded', populateCategories);
+</script>
