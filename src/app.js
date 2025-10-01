@@ -15,6 +15,7 @@ import MongoStore from "connect-mongo";
 import indexRoutes from "./routes/index.js";
 import userRoutes from "./routes/userRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
 
 //middleware routes import
 import notFoundMiddleware from "./middlewares/notFoundMiddleware.js";
@@ -71,6 +72,7 @@ app.use((req, res, next) => {
 app.use("/", indexRoutes);
 app.use("/", userRoutes);
 app.use("/transactions", transactionRoutes);
+app.use("/categories", categoryRoutes);
 
 // 404 handler
 app.use(notFoundMiddleware);
