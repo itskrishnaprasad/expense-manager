@@ -13,6 +13,11 @@ const transactionSchema = new mongoose.Schema(
       required: true,
       enum: ["income", "expense"], // The type must be one of these two values
     },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category", // This links to the Category model
+      required: true,
+    },
     amount: {
       type: Number,
       required: true,
