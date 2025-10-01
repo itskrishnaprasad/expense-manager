@@ -1,3 +1,120 @@
-<h1>Welcome, <%= user.username %>!</h1>
-<p>This is your dashboard. More features coming soon.</p>
+<div class="container mx-auto p-4">
+  <h1 class="text-3xl font-bold mb-4">Welcome, <%= user.username %>!</h1>
+
+  <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+    <h2 class="text-2xl font-semibold mb-4">Add New Transaction</h2>
+    <form action="/transactions" method="POST">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="type" class="block text-gray-700">Type</label>
+          <select
+            name="type"
+            id="type"
+            required
+            class="w-full mt-1 p-2 border rounded-md"
+          >
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+          </select>
+        </div>
+        <div>
+          <label for="amount" class="block text-gray-700">Amount</label>
+          <input
+            type="number"
+            name="amount"
+            id="amount"
+            step="0.01"
+            min="0.01"
+            required
+            class="w-full mt-1 p-2 border rounded-md"
+          />
+        </div>
+        <div>
+          <label for="date" class="block text-gray-700">Date</label>
+          <input
+            type="date"
+            name="date"
+            id="date"
+            required
+            value="<%= new Date().toISOString().split('T')[0] %>"
+            class="w-full mt-1 p-2 border rounded-md"
+          />
+        </div>
+        <div>
+          <label for="note" class="block text-gray-700">Note (Optional)</label>
+          <input
+            type="text"
+            name="note"
+            id="note"
+            class="w-full mt-1 p-2 border rounded-md"
+            placeholder="e.g., Groceries"
+          />
+        </div>
+      </div>
+      <button
+        type="submit"
+        class="mt-4 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+      >
+        Add Transaction
+      </button>
+    </form>
+  </div>
+
+  <div class="bg-white p-6 rounded-lg shadow-md">
+    <h2 class="text-2xl font-semibold mb-4">Your Transactions</h2>
+    <% if (transactions.length > 0) { %>
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="py-2 px-4 text-left">Type</th>
+            <th class="py-2 px-4 text-left">Date</th>
+            <th class="py-2 px-4 text-left">Note</th>
+            <th class="py-2 px-4 text-right">Amount</th>
+            <th class="py-2 px-4 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% transactions.forEach(function(tx) { %>
+          <tr class="border-b">
+            <td class="py-2 px-4">
+              <span
+                class="px-2 py-1 text-xs font-semibold rounded-full <%= tx.type === 'income' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800' %>"
+              >
+                <%= tx.type.charAt(0).toUpperCase() + tx.type.slice(1) %>
+              </span>
+            </td>
+            <td class="py-2 px-4"><%= tx.date.toLocaleDateString() %></td>
+            <td class="py-2 px-4"><%= tx.note %></td>
+            <td
+              class="py-2 px-4 text-right font-medium <%= tx.type === 'income' ? 'text-green-600' : 'text-red-600' %>"
+            >
+              ₹<%= tx.amount.toFixed(2) %>
+            </td>
+            <td class="py-2 px-4 text-center">
+              <form
+                action="/transactions/delete/<%= tx._id %>"
+                method="POST"
+                class="inline"
+              >
+                <button
+                  type="submit"
+                  class="text-red-500 hover:text-red-700 text-sm"
+                >
+                  Delete
+                </button>
+              </form>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } else { %>
+    <p class="text-gray-500">
+      You have no transactions yet. Add one above to get started!
+    </p>
+    <% } %>
+  </div>
+</div>
 <a href="/logout">Logout</a>
