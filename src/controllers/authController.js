@@ -2,6 +2,15 @@ import User from "../models/userModel.js"; // importing userSchema
 import Transaction from "../models/transactionModel.js";
 import Category from "../models/categoryModel.js";
 import bcrypt from "bcrypt"; // for hasing user password
+import mongoose from "mongoose";
+
+import {
+  startOfMonth,
+  endOfMonth,
+  sub,
+  startOfYear,
+  formatISO,
+} from "date-fns";
 
 // Show register page
 export const getRegister = (req, res) => {
@@ -100,28 +109,68 @@ export const postLogin = async (req, res) => {
   }
 };
 
-// Show user dashboard
+// Show user dashboard (Simplified Version)
 export const getDashboard = async (req, res) => {
   try {
-    const userId = req.session.user.id; // Get the logged-in user's ID
+    const userId = req.session.user.id;
+    const { filter } = req.query;
+    const now = new Date();
+    let startDate, endDate;
 
-    const [transactions, incomeCategories, expenseCategories] =
-      await Promise.all([
-        // Fetch transactions for THIS user
-        Transaction.find({ user: userId })
-          .populate("category")
-          .sort({ date: -1 }),
-        // Fetch income categories for THIS user
-        Category.find({ user: userId, type: "income" }).sort({ name: 1 }),
-        // Fetch expense categories for THIS user
-        Category.find({ user: userId, type: "expense" }).sort({ name: 1 }),
-      ]);
+    // --- Simplified Date Range Calculation ---
+    if (filter === "prev_month") {
+      const prevMonth = sub(now, { months: 1 });
+      startDate = startOfMonth(prevMonth);
+      endDate = endOfMonth(prevMonth);
+    } else {
+      // Default to this month
+      startDate = startOfMonth(now);
+      endDate = endOfMonth(now);
+    }
+
+    // --- Database Aggregation for Summary ---
+    const summary = await Transaction.aggregate([
+      // --- The Fix is here ---
+      {
+        $match: {
+          // 2. FIX: Convert string ID to ObjectId for the aggregation query
+          user: new mongoose.Types.ObjectId(userId),
+          date: { $gte: startDate, $lte: endDate },
+        },
+      },
+      { $group: { _id: "$type", total: { $sum: "$amount" } } },
+    ]);
+
+    // --- Process Aggregation Results ---
+    let totalIncome = 0;
+    let totalExpense = 0;
+    summary.forEach((item) => {
+      if (item._id === "income") totalIncome += item.total;
+      else if (item._id === "expense") totalExpense += item.total;
+    });
+    const netBalance = totalIncome - totalExpense;
+
+    // --- Fetch Latest 10 Transactions (Always) ---
+    const recentTransactions = await Transaction.find({ user: userId })
+      .sort({ date: -1 })
+      .limit(10)
+      .populate("category");
+
+    // --- Fetch Categories for the Form ---
+    const [incomeCategories, expenseCategories] = await Promise.all([
+      Category.find({ user: userId, type: "income" }).sort({ name: 1 }),
+      Category.find({ user: userId, type: "expense" }).sort({ name: 1 }),
+    ]);
 
     res.render("pages/dashboard", {
       title: "Dashboard",
-      transactions,
+      totalIncome,
+      totalExpense,
+      netBalance,
+      recentTransactions,
       incomeCategories,
       expenseCategories,
+      currentFilter: filter || "this_month",
     });
   } catch (error) {
     console.error(error);
